@@ -1,0 +1,50 @@
+{
+    "run_mode": "DELTA",
+    "ees_resources_dir": "gs://cdap-orchestrator-offline-releases/ORCHESTRATOR/EES_RESOURCES",
+    "deployment_base_dir": "/opt/spark/orchestrator/",
+    "source_dir": {
+        "root_dir": "gs://cdap-orchestrator-offline-releases/SAMPLE_PRE_PROCESSED/",
+        "raw_src_dirs": {
+            "5.000": "gs://cdap-raw-deid-data/20230106/",
+            "5.005": "gs://cdap-raw-deid-data/20230126/",
+            "5.007": "gs://cdap-raw-deid-data/20230210/",
+            "5.009": "gs://cdap-raw-deid-data/20230315/",
+            "5.011": "gs://cdap-raw-deid-data/20230327/",
+            "5.013": "gs://cdap-raw-deid-data/20230428/",
+            "5.015": "gs://cdap-raw-deid-data/20230525/",
+            "5.017": "gs://cdap-raw-deid-data/20230621/",
+            "5.019": "gs://cdap-raw-deid-data/20230720-EHR/",
+            "5.021": "gs://cdap-raw-deid-data/incremental/June_2023/"
+        }
+    },
+    "datagen_dir": {
+        "root_dir": "gs://cdap-orchestrator-offline-releases/SAMPLE/",
+        "local_root_dir": "/tmp",
+        "local_tmp_dir": "/tmp",
+        "old_maps_dir": "gs://cdap-orchestrator-offline-releases/V4_MAPS/",
+        "release_bucket": "gs://cdap-orchestrator-offline-sample-releases",
+        "source_data_version": 5,
+        "version": "CURRENT",
+        "nferx_version": "NFERX"
+    },
+    "data_sizes": {
+        "max_patients": 10000000,
+        "max_partitions": 100,
+        "max_blocks": 10,
+        "max_buckets": 1000,
+        "max_sub_buckets": 5,
+        "max_threshold": 80
+    },
+    "sample_run":  {
+        "enabled": true,
+        "max_sample_size": 1000,
+        "sample_size": 1000,
+        "user": "",
+        "use_user_root_dir": false,
+        "ground_truth": "GT_RAJAN",
+        "sample_pid_folder": "sample_patients",
+        "sample_pid_col": "PATIENT_DK",
+        "sample_pid_gt": "GT_RAJAN",
+        "manual_entries":   []
+    }
+}

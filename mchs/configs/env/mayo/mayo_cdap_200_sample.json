@@ -1,0 +1,35 @@
+{
+	"run_as_user": "spark",
+	"airflow_home": "/opt/airflow/",
+	"deploy_location": "/opt/spark/orchestrator/",
+	"python": "python3",
+	"venv_location": "/opt/spark/orchestrator/pyenv3.8",
+    "spark_bin_location": "/data/spark-3.2.0-bin-hadoop3.2/bin/spark-submit",
+	"spark_args": {
+		"master": "local[*]",
+		"driver-memory": "30g",
+		"executor-cores": "8",
+		"executor-memory": "80g",
+		"conf": [
+			"spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog",
+			"spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version=2",
+			"spark.delta.logStore.gs.impl=io.delta.storage.GCSLogStore",
+			"spark.driver.extraClassPath=/opt/spark/orchestrator/jars/delta-core_2.12-1.1.0.jar:/opt/spark/orchestrator/jars/delta-storage-1.2.0.jar:/opt/spark/orchestrator/jars/gcs-connector-latest-hadoop2.jar:/opt/spark/orchestrator/jars/spark-avro_2.12-3.2.0.jar"
+		]
+	},
+	"jars": [
+		"/opt/spark/orchestrator/jars/delta-core_2.12-1.1.0.jar",
+		"/opt/spark/orchestrator/jars/gcs-connector-latest-hadoop2.jar",
+		"/opt/spark/orchestrator/jars/spark-avro_2.12-3.2.0.jar"
+	],
+	"pager_duty": {
+		"routing_key": "4687c7ebf625470dc0fd230fee6f616a",
+		"url": "https://events.pagerduty.com/v2/enqueue"
+	},
+	"section_header_config": {
+		"venv_path": "/data5/crawl_pyenv",
+		"deploy_dir": "/data5/section_header_repo/ClinicalIE/sectionHeaderCrawl",
+		"worker_host_pattern": "cdap-r-offline-sparkdb-worker-{}",
+		"worker_count": 6
+	}
+}

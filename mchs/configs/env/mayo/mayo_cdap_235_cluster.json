@@ -1,0 +1,45 @@
+{
+	"run_as_user": "hadoop",
+	"airflow_home": "/opt/airflow/",
+	"deploy_location": "/opt/hadoop/orchestrator/",
+	"local_tmp_dir": "/data/orch_scratch/",
+	"python": "python3.6",
+	"venv_location": "/opt/hadoop/orchestrator/pyenv_omop",
+    "spark_bin_location": "/home/hadoop/spark/bin/spark-submit",
+	"spark_args": {
+		"master": "yarn",
+		"driver-memory": "5g",
+		"executor-cores": "5",
+		"executor-memory": "16g",
+		"num-executors": "30",
+        "deploy-mode": "cluster",
+		"queue": "medium_priority",
+		"conf": [
+			"spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog",
+			"spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version=2",
+			"spark.delta.logStore.gs.impl=io.delta.storage.GCSLogStore",
+			"spark.ui.enabled=true",
+			"spark.ui.reverseProxy=true",
+			"spark.ui.reverseProxyUrl=/yarn_ui",
+			"spark.shuffle.io.retryWait=120s",
+            "spark.reducer.maxReqsInFlight=5",
+            "spark.shuffle.file.buffer=4m",
+            "spark.network.timeout=600s",
+            "spark.shuffle.push.enabled=true",
+			"spark.shuffle.service.enabled=true",
+            "spark.io.encryption.enabled=false",
+            "spark.serializer=org.apache.spark.serializer.KryoSerializer"
+		]
+	},
+	"jars": [
+		"/opt/hadoop/orchestrator/jars/delta-core_2.12-1.2.0.jar",
+		"/opt/hadoop/orchestrator/jars/delta-storage-2.1.1.jar",
+		"/opt/hadoop/orchestrator/jars/gcs-connector-latest-hadoop2.jar",
+		"/opt/hadoop/orchestrator/jars/spark-avro_2.12-3.2.0.jar"
+	],
+	"pager_duty": {
+		"routing_key": "4687c7ebf625470dc0fd230fee6f616a",
+		"url": "https://events.pagerduty.com/v2/enqueue"
+	},
+	"is_yarn_cluster": true
+}

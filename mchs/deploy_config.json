@@ -1,0 +1,280 @@
+{
+    "gt1_sample_run": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_sample_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_sample.json",
+        "env_config": "mayo_cdap_200_sample.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "sample_run_test": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_sample.json",
+        "env_config": "mayo_cdap_200_sample.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_200": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema_sample.json",
+        "data_config": "mayo_cdap_v5.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta_sample.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "rahul_v5_200": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "gpk_v5_200": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_test.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_200_master": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v4_42": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_test.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_200_dicom": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_gcs": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "dod_rg": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235_max.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "dod_rajan": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_sample_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_sample.json",
+        "env_config": "mayo_cdap_235_max.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "dod_ps": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_235_max_5.033": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "omop_config_folder": "mayo_cdap",
+        "post_processor_config": "mayo_post_processor_config_copy.json"
+    },
+    "v5_200_5.033": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "omop_config_folder": "mayo_cdap",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "dod_ps_h": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "dod_ps_h": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235_max.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json"
+    },
+    "v5_235_max": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235_max.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "v5_235_dicom": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "duke_1a": {
+        "amc": "duke",
+        "dags_config": "duke_2_dags.json",
+        "schema_config": "duke_2_schema.json",
+        "data_config": "duke_1a.json",
+        "env_config": "duke_1a.json",
+        "harmonisation_config": "duke_1a.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "duke_2": {
+        "amc": "duke",
+        "dags_config": "duke_2_dags.json",
+        "schema_config": "duke_2_schema.json",
+        "data_config": "duke_2.json",
+        "env_config": "duke_2.json",
+        "harmonisation_config": "duke_2.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "validation_config": "GROUPBYColumnQueryTable.json",
+        "omop_config_folder": "duke_2",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "duke_omop": {
+        "amc": "duke",
+        "dags_config": "duke_1a_dags.json",
+        "schema_config": "duke_2_schema.json",
+        "data_config": "duke_1a.json",
+        "env_config": "duke_1a.json",
+        "harmonisation_config": "duke_1a.json",
+        "omop_config_folder": "duke_1a",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "duke_omop_env2": {
+        "amc": "duke",
+        "dags_config": "duke_1a_dags.json",
+        "schema_config": "duke_2_schema.json",
+        "data_config": "duke_2.json",
+        "env_config": "duke_2.json",
+        "harmonisation_config": "duke_1a.json",
+        "omop_config_folder": "duke_2",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "omop": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5.json",
+        "env_config": "mayo_cdap_42.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "omop_dod": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_235_cluster.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "omop_200": {
+        "amc": "mayo",
+        "dags_config": "mayo_cdap_dags.json",
+        "schema_config": "mayo_cdap_schema.json",
+        "data_config": "mayo_cdap_v5_gcs.json",
+        "env_config": "mayo_cdap_200.json",
+        "harmonisation_config": "mayo_cdap_harmonisation.json",
+        "omop_config_folder": "mayo_cdap",
+        "post_processor_config": "mayo_post_processor_config.json"
+    },
+    "mercy_1a": {
+        "amc": "mercy",
+        "dags_config": "mercy_1a_dags.json",
+        "schema_config": "mercy_schema.json",
+        "data_config": "mercy_1a.json",
+        "env_config": "mercy_1a.json",
+        "harmonisation_config": "mercy.json",
+        "source_concept_meta_config": "source_concept_meta.json",
+        "omop_config_folder": "mercy_1a",
+        "post_processor_config": "mayo_post_processor_config.json"
+    }
+}

@@ -1,0 +1,22 @@
+{
+	"run_as_user": "spark",
+	"airflow_home": "/opt/airflow/",
+	"deploy_location": "/opt/spark/orchestrator/",
+	"python": "python3",
+	"venv_location": "/opt/spark/orchestrator/pyenv",
+	"spark_bin_location": "/data_spark/spark-3.2.0-bin-hadoop3.2/bin/spark-submit",
+	"mount_redirects": {
+		"/data/": "/data_v5/"
+	},
+	"spark_args": {
+		"master": "local[*]",
+		"driver-memory": "50g",
+		"conf": [
+			"spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
+		]
+	},
+	"jars": [
+		"/opt/spark/orchestrator/jars/delta-core_2.12-1.1.0.jar",
+		"/opt/spark/orchestrator/jars/gcs-connector-latest-hadoop2.jar"
+	]
+}

@@ -1,0 +1,409 @@
+{
+	"dags": [
+		{
+			"dag_id": "ORCHESTRATOR_DATA_UPDATE",
+			"description": "Main orchestrator datagen",
+			"tasks": [
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "DIM_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "FACT_PRE_PROCESS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "FACT_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "SPARK_SQL_TABLE_GEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "INCEPTOR_STATS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "SYN_DATAGEN",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "RAW_DATA_ANALYZER",
+			"description": "Create new run-version",
+			"tasks": [
+				{
+					"task_id": "RAW_DIM_PATIENT_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "dim_patient"
+					}
+				},
+				{
+					"task_id": "RAW_DIM_SCHEMA_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "dim_schema"
+					}
+				},
+				{
+					"task_id": "RAW_FACT_SCHEMA_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "fact_schema"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "RUN_MANAGER",
+			"description": "Create new run-version",
+			"tasks": [
+				{
+					"task_id": "CREATE_VERSION",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "create"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "DIM_PATIENT",
+			"tasks": [
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "dim_patient"
+					}
+				},
+				{
+					"task_id": "DIM_PATIENT_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "delta_table"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "DIM_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "DIM_PREPROCESS",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "pre_process"
+					}
+				},
+				{
+					"task_id": "DIM_HASH",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_hash.py",
+					"op_kwargs": {
+						"run": "dim_hash"
+					}
+				},
+				{
+					"task_id": "DIM_VERSION",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "dim_version",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FACT_PRE_PROCESS",
+			"tasks": [
+				{
+					"task_id": "PRE_PROCESS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "preprocess",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "BIG3_STATS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "raw_stats",
+						"source": "BIG3"
+					}
+				},
+				{
+					"task_id": "VALIDATE_STATS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "validate_stats",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FACT_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "MAX_ROW_ID",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "max_row_id",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_GEN",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "fact_gen",
+						"source": "ALL",
+						"skip-if-exists": true
+					}
+				},
+				{
+					"task_id": "FACT_VERSION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "fact_version",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "VALIDATE_VERSION_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "validate",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "VERSION_COUNT_VALIDATION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "version_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "RELEASE_VERSION",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "release"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "SPARK_SQL_TABLE_GEN",
+			"tasks": [
+				{
+					"task_id": "VERSION_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "version_table"
+					}
+				},
+				{
+					"task_id": "DIM_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "delta_table",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "delta_table",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "INCEPTOR_STATS",
+			"description": "Create all the basic STATS.",
+			"tasks": [
+				{
+					"task_id": "UNIQUES",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "uniques",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "ENCOUNTER_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "enc_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "COUNTS_DK_INFO",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "enc_count_dk_info",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "Y_ROW_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "y_row_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "RAW_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "raw_col_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "DATAGEN_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "data_col_counts",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "SYN_DATAGEN",
+			"description": "Generates synthetic tables like, covid, hospitalization etc",
+			"tasks": [
+				{
+					"task_id": "PROCEDURE_NORMALIZER",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "procedure_normalizer.py"
+				},
+				{
+					"task_id": "DEATH_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "death.py"
+				},
+				{
+					"task_id": "COVID_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "covid.py"
+				},
+				{
+					"task_id": "COVID_COMPREHENSIVE_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "covid_full.py"
+				},
+				{
+					"task_id": "VACCINE_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "vaccine.py"
+				},
+				{
+					"task_id": "HOSPITALIZATION_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "hospitalization.py"
+				},
+				{
+					"task_id": "COMBINED_DRUGS",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "combined_drugs.py"
+				},
+				{
+					"task_id": "MIN_MAX_OBSERVED_DATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "observed_date.py"
+				},
+				{
+					"task_id": "DIM_PATIENT_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "dim_patient_summary.py"
+				}
+			]
+		}
+	],
+	"dag_args": {
+		"owner": "orchestrator",
+		"email": [
+			"abhijeet.p@nference.net"
+		],
+		"email_on_failure": false,
+		"email_on_retry": false
+	},
+	"pager_duty": {
+		"url": "https://events.pagerduty.com/v2",
+		"routing_key": "4687c7ebf625470dc0fd230fee6f616a"
+	}
+}

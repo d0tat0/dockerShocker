@@ -1,0 +1,7 @@
+wheel
+pymysql
+requests
+flask
+bson
+dnspython
+python-etcd

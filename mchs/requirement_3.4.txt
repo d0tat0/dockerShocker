@@ -1,0 +1,5 @@
+pyspark==3.4.0
+delta-spark==2.4.0
+pandas==2.1.4
+requests
+jsonschema~=4.18.0

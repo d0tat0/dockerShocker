@@ -1,0 +1,103 @@
+{
+    "run_mode": "DELTA",
+    "ees_resources_dir": "gs://cdap-offline-data/ORCHESTRATOR/EES_RESOURCES",
+    "deployment_base_dir": "/opt/spark/orchestrator/",
+    "source_dir": {
+        "root_dir": "gs://cdap-offline-data/PRE_PROCESSED/",
+        "raw_src_dirs": {
+            "5.000": {
+                "bucket": "gs://cdap-raw-deid-data/20221021/",
+                "name": "May 2022 Full Data"
+            },
+            "5.003": {
+                "bucket": "gs://cdap-raw-deid-data/20230106/",
+                "name": "June 2022 Incremental Data"
+            },
+            "5.005": {
+                "bucket": "gs://cdap-raw-deid-data/20230126/",
+                "name": "October 2022 Incremental Data"
+            },
+            "5.007": {
+                "bucket": "gs://cdap-raw-deid-data/20230210/",
+                "name": "December 2022 Incremental Data"
+            },
+            "5.009": {
+                "bucket": "gs://cdap-raw-deid-data/20230315/",
+                "name": "January 2023 Incremental Data"
+            },
+            "5.011": {
+                "bucket": "gs://cdap-raw-deid-data/20230327/",
+                "name": "January 2023 v2 Incremental Data"
+            },
+            "5.013": {
+                "bucket": "gs://cdap-raw-deid-data/20230428/",
+                "name": "February 2023 Incremental Data"
+            },
+            "5.015": {
+                "bucket": "gs://cdap-raw-deid-data/20230525/",
+                "name": "March 2023 Incremental Data"
+            },
+            "5.017": {
+                "bucket": "gs://cdap-raw-deid-data/20230621/",
+                "name": "March 2023 LabTest Refresh Data"
+            },
+            "5.019": {
+                "bucket": "gs://cdap-raw-deid-data/20230720-EHR/",
+                "name": "April 2023 Incremental Data"
+            },
+            "5.021": {
+                "bucket": "gs://cdap-raw-deid-data/incremental/June_2023/",
+                "name": "June 2023 Incremental Data"
+            },
+            "5.023": {
+                "bucket": "gs://cdap-raw-deid-data/20231023-EHR/",
+                "name": "July-Sept 2023 Incremental Data"
+            },
+            "5.025": {
+                "bucket": "gs://cdap-raw-deid-data/20231025-EHR/",
+                "name": "2023 LabTest Refresh Incremental Data"
+            },
+            "5.027": {
+                "bucket": [
+                    "gs://cdap-raw-deid-data/20230610",
+                    "gs://cdap-raw-deid-data/20231027-EHR/",
+                    "gs://cdap-raw-deid-data/20231101-EHR/",
+                    "gs://cdap-raw-deid-data/20231107-EHR/"
+
+                ],
+                "sources": ["FACT_OR_ADM_LINK", "FACT_ORDER_NARRATIVE", "FACT_ONBASE_DOCUMENTS_GENOMICS",
+                    "DIM_PATIENT", "FACT_PATHOLOGY_SPECIMEN_INFORMATION", "FACT_SCHEDULING"],
+                "name": "New Tables Ingestion"
+            },
+            "5.029": {
+                "bucket": "gs://cdap-raw-deid-data/20231201-EHR/",
+                "name": "October 2023 Incremental Data"
+            },
+            "5.031": {
+                "bucket": "gs://cdap-raw-deid-data/20240103-EHR/",
+                "name": "November 2023 Incremental Data"
+            },
+            "5.033": {
+                "bucket": "gs://cdap-raw-deid-data/20240205-EHR/",
+                "name": "December 2023 Incremental Data"
+            }
+        }
+    },
+    "datagen_dir": {
+        "root_dir": "gs://cdap-data-dev/ORCHESTRATOR/",
+        "write_root_dir": "gs://cdap-data-dev/ORCHESTRATOR/",
+        "local_root_dir": "/data5/ORCHESTRATOR/",
+        "local_tmp_dir": "/data5/ORCHESTRATOR/",
+        "old_maps_dir": "gs://cdap-orchestrator-offline-releases/V4_MAPS/",
+        "release_bucket": "gs://cdap-orchestrator-offline-releases",
+        "source_data_version": 5
+    },
+    "data_sizes": {
+        "max_patients": 10000000,
+        "max_partitions": 100,
+        "max_blocks": 10,
+        "max_buckets": 1000,
+        "max_sub_buckets": 5,
+        "max_threshold": 80
+    }
+}

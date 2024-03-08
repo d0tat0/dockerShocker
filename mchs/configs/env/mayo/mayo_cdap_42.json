@@ -1,0 +1,27 @@
+{
+	"run_as_user": "spark",
+	"airflow_home": "/opt/airflow/",
+	"deploy_location": "/opt/spark/orchestrator/",
+	"local_tmp_dir": "/data3/tmp/",
+	"python": "python3",
+	"venv_location": "/opt/spark/orchestrator/pyenv",
+	"spark_bin_location": "/usr/local/spark-3.1.2-bin-hadoop3.2/bin/spark-submit",
+	"spark_args": {
+		"master": "spark://cdap-offline-spark-hdfs-master-0:7077",
+		"driver-memory": "50g",
+		"executor-cores": "10",
+		"executor-memory": "100g",
+		"conf": [
+			"spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog",
+			"spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version=2",
+			"spark.delta.logStore.gs.impl=io.delta.storage.GCSLogStore",
+			"spark.driver.extraClassPath=/opt/spark/orchestrator/jars/delta-core_2.12-1.0.0.jar"
+		]
+	},
+	"jars": [
+		"/opt/spark/orchestrator/jars/delta-core_2.12-1.0.0.jar",
+		"/opt/spark/orchestrator/jars/gcs-connector-latest-hadoop2.jar",
+		"/opt/spark/orchestrator/jars/spark-avro_2.12-3.2.0.jar",
+		"/usr/local/spark-3.1.2-bin-hadoop3.2/jars/mysql-connector-java-8.0.26.jar"
+	]
+}

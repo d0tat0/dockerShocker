@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  spark-master:
+    container_name: smol-spark-master
+    build: spark/.
+    image: smol-spark-image
+    entrypoint: ['./entrypoint.sh', 'master']
+    environment:
+      SPARK_NO_DAEMONIZE: true
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - ./spark_apps:/opt/spark/apps
+      - spark-logs:/opt/spark/spark-events
+    ports:
+      - '9090:8080'
+      - '7077:7077'
+
+  spark-worker:
+#    container_name: smol-spark-worker
+    image: smol-spark-image
+    entrypoint: ['./entrypoint.sh', 'worker']
+    environment:
+      SPARK_NO_DAEMONIZE: true
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_apps:/opt/spark/apps
+      - spark-logs:/opt/spark/spark-events
+        
+  mysqldb:
+    container_name: smol-mysql
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+        MYSQL_ROOT_PASSWORD: docker_test
+        
+  orch-airflow:
+    container_name: smol-orchy-airflow
+    image: ./mchs
+
+
+volumes:
+  spark-logs:

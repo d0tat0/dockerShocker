@@ -1,0 +1,33 @@
+{
+    "run_mode": "DELTA",
+    "ees_resources_dir": "/data5/EES_RESOURCES",
+    "deployment_base_dir": "/opt/spark/orchestrator/",
+    "source_dir": {
+        "root_dir": "gs://cdap-orchestrator-offline-releases/TEST_ENV/PRE_PROCESSED/",
+        "raw_src_dirs": [
+            "gs://cdap-orchestrator-offline-releases/TEST_ENV/RAW_DATA/FULL/"
+        ],
+        "incr_raw_src_dirs": [
+            "gs://cdap-orchestrator-offline-releases/TEST_ENV/RAW_DATA/DELTA/"
+        ]
+    },
+    "datagen_dir": {
+        "root_dir": "gs://cdap-orchestrator-offline-releases/TEST_ENV/ORCHESTRATOR/",
+        "local_root_dir": "/data5/TEST_ENV/ORCHESTRATOR/",
+        "old_maps_dir": "gs://cdap-orchestrator-offline-releases/TEST_ENV/OLD_MAPS/",
+        "release_bucket": "gs://cdap-orchestrator-offline-releases/TEST_ENV/",
+        "source_data_version": 5,
+        "version": "CURRENT",
+        "nferx_version": "NFERX"
+    },
+    "data_sizes": {
+        "max_patients": 10000000,
+        "max_partitions": 100,
+        "max_blocks": 10,
+        "max_buckets": 2,
+        "max_sub_buckets": 5,
+        "max_threshold": 25
+    }
+}
+
+

@@ -1,0 +1,24 @@
+{
+    "run_mode": "FULL",
+    "source_dir": {
+        "root_dir": "/datastorage/ORCHESTRATOR/PRE_PROCESSED/",
+        "raw_src_dirs": [
+            "/home/sai.d/synthetic_datagen/data/all_out_dir/"
+        ],
+        "incr_raw_src_dirs": []
+    },
+    "datagen_dir": {
+        "root_dir": "/datastorage/ORCHESTRATOR/",
+        "source_data_version": 4,
+        "version": "CURRENT",
+        "nferx_version": "NFERX"
+    },
+    "data_sizes": {
+        "max_patients": 10000000,
+        "max_partitions": 100,
+        "max_blocks": 10,
+        "max_buckets": 100,
+        "max_sub_buckets": 5,
+        "max_threshold": 20
+    }
+}

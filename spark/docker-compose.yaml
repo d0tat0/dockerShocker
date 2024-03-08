@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  spark-master:
+    container_name: smol-spark-master
+    build: .
+    image: smol-spark-image
+    entrypoint: ['./entrypoint.sh', 'master']
+    environment:
+      SPARK_NO_DAEMONIZE: true
+    volumes:
+      - ./spark_apps:/opt/spark/apps
+      - spark-logs:/opt/spark/spark-events
+    ports:
+      - '9090:8080'
+      - '7077:7077'
+      - '4040:4040'
+
+  spark-worker:
+#    container_name: smol-spark-worker
+    image: smol-spark-image
+    entrypoint: ['./entrypoint.sh', 'worker']
+    environment:
+      SPARK_NO_DAEMONIZE: true
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_apps:/opt/spark/apps
+      - spark-logs:/opt/spark/spark-events
+
+volumes:
+  spark-logs:

@@ -1,0 +1,2250 @@
+{
+	"dags": [
+		{
+			"dag_id": "ORCHESTRATOR_DATA_UPDATE",
+			"description": "Main orchestrator datagen",
+			"tasks": [
+				{
+					"task_id": "VALIDATE_TABLES",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "CDV_RAW_VALIDATION",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "DIM_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "FACT_PRE_PROCESS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "INTERIM_DIM_SYN_GENERATOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "AMC_SOURCE_CONCEPT_META_GENERATOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "FACT_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "SPARK_SQL_TABLE_GEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "INCEPTOR_STATS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "SYN_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "NPY_WAVEFORM",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "EXTRACTIONS_SYN_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "POST_PROCESSOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "ORCHESTRATOR_ALL_TABLE_STATS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "COHORT_DATAGEN_HYC_260K",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "CDV_DATAGEN_VALIDATION",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "ORCHESTRATOR_EES_UPDATE",
+			"description": "EES Update and all other stuff needed",
+			"tasks": [
+				{
+					"task_id": "INTERIM_DIM_SYN_GENERATOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "AMC_SOURCE_CONCEPT_META_GENERATOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "EXTRACTIONS_GENERATOR",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "EXTRACTIONS_MERGER",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "CDV_DATAGEN_VALIDATION",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "EXTRACTIONS_SYN_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "SPARK_SQL_TABLE_GEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "INCEPTOR_STATS",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "COMBINED_DRUGS",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "combined_drugs.py"
+				},
+				{
+					"task_id": "SYN_DATA_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "synthetic_summaries.py",
+					"op_kwargs": {
+						"run": "delta_table"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "ORCHESTRATOR_CSV_UPDATE_NEW",
+			"description": "CSV data generation",
+			"tasks": [
+				{
+					"task_id": "SYNC_RUN_STATE",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "sync_run_state"
+					}
+				},
+				{
+					"task_id": "HARMONIZED_COMBINED_VARIABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "harmonized_summaries.py",
+					"op_kwargs": {
+						"run": "harmonized_combined_summary_spark"
+					}
+				},
+				{
+					"task_id": "WAVEFORM_CSV",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "parquet2final",
+						"source": "FACT_ECG_WAVEFORM"
+					}
+				},
+				{
+					"task_id": "NPY_WAVEFORM",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "ORCHESTRATOR_CSV_UPDATE",
+			"description": "CSV data generation",
+			"tasks": [
+				{
+					"task_id": "SYNC_RUN_STATE",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "sync_run_state"
+					}
+				},
+				{
+					"task_id": "MANUAL_HARMONIZATION_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "NPY_WAVEFORM",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "PARQUET_TO_CSV",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "VERSION_DIR_MAP",
+					"script_location": "spark_fact_datagen",
+					"command": "python3 fact_version.py",
+					"op_kwargs": {
+						"run": "version_dir_map"
+					}
+				},
+				{
+					"task_id": "SYNC_DISK_TO_CLOUD",
+					"script_location": "shell_scripts",
+					"command": "python3 gsutil_commands_wrapper.py",
+					"op_kwargs": {
+						"run": "backup_datagen_folder"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "PARQUET_TO_CSV",
+			"description": "CSV data generation",
+			"tasks": [
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "parquet2final",
+						"source": "DIM_PATIENT"
+					}
+				},
+				{
+					"task_id": "DIM_MAPS_VERSIONED",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "parquet2final",
+						"source": "DIM_MAPS_VERSIONED"
+					}
+				},
+				{
+					"task_id": "DATAGEN",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "parquet2final",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_MAPS_VERSIONED",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "parquet2final",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "SYN_DATA",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "synthetic_summaries.py",
+					"op_kwargs": {
+						"run": "parquet2final"
+					}
+				},
+				{
+					"task_id": "CSV_VALIDATION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "csv_col_counts",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "RAW_DATA_ANALYZER",
+			"description": "Create new run-version",
+			"tasks": [
+				{
+					"task_id": "RAW_DIM_PATIENT_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "dim_patient"
+					}
+				},
+				{
+					"task_id": "RAW_DIM_SCHEMA_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "dim_schema"
+					}
+				},
+				{
+					"task_id": "RAW_FACT_SCHEMA_CHECK",
+					"script_location": "config_driven_validation",
+					"command": "python3 raw_data_analyzer.py",
+					"op_kwargs": {
+						"run": "fact_schema"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "RUN_MANAGER",
+			"description": "Create new run-version",
+			"tasks": [
+				{
+					"task_id": "CREATE_VERSION",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "create"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "DIM_PATIENT",
+			"tasks": [
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "dim_patient"
+					}
+				},
+				{
+					"task_id": "DIM_PATIENT_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "delta_table"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "DIM_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "DIM_PREPROCESS",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "pre_process"
+					}
+				},
+				{
+					"task_id": "DIM_HASH",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_hash.py",
+					"op_kwargs": {
+						"run": "dim_hash"
+					}
+				},
+				{
+					"task_id": "DIM_VERSION",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "dim_version",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FACT_PRE_PROCESS",
+			"tasks": [
+				{
+					"task_id": "PRE_PROCESS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "preprocess",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "BIG3_STATS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "raw_stats",
+						"source": "BIG3"
+					}
+				},
+				{
+					"task_id": "VALIDATE_STATS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_pre_processor.py",
+					"op_kwargs": {
+						"run": "validate_stats",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FACT_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "MAX_ROW_ID",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "max_row_id",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_GEN",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "fact_gen",
+						"source": "ALL",
+						"skip-if-exists": true
+					}
+				},
+				{
+					"task_id": "FACT_VERSION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "fact_version",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "VALIDATE_VERSION_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "validate",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "VERSION_COUNT_VALIDATION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "version_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "RELEASE_VERSION",
+					"script_location": "spark_jobs",
+					"command": "python3 run_manager.py",
+					"op_kwargs": {
+						"run": "release"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "CDV_DATAGEN_VALIDATION",
+			"description": "Data validation using config",
+			"tasks": [
+				{
+					"task_id": "DATAGEN_DATA_CDV",
+					"operator": "SparkOperator",
+					"script_location": "config_driven_validation",
+					"script_name": "main.py",
+					"op_kwargs": {
+						"amc":"mayo",
+						"schema-filename":"mayo_schema.json",
+						"data-choice":"datagen",
+						"cdv-config-filepath":"resources/Datagen_DQ_Checks.json",
+						"dq-config-filename":"Datagen_DQ_Checks.json",
+						"generate-table-metrics": true,
+						"skip-if-exists": true,
+						"index-filepath": "gs://cdap-offline-backup/PROJECTS/CONFIG_DRIVEN_VALIDATION/DATA_INDEX_STORE/data_index.json",
+						"data-schema-plugin": "MayoDataSchema",
+    					"data-indexer-plugin": "StandardDataIndexer"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "CDV_RAW_VALIDATION",
+			"description": "Data validation using config",
+			"tasks": [
+				{
+					"task_id": "RAW_DATA_CDV",
+					"operator": "SparkOperator",
+					"script_location": "config_driven_validation",
+					"script_name": "main.py",
+					"op_kwargs": {
+						"amc":"mayo",
+						"schema-filename":"mayo_raw_schema.json",
+						"data-choice":"raw",
+						"cdv-config-filepath":"resources/RAW_DQ_Checks.json",
+						"dq-config-filename":"RAW_DQ_Checks.json",
+						"generate-table-metrics": true,
+						"skip-if-exists": false,
+						"index-filepath": "gs://cdap-offline-backup/PROJECTS/CONFIG_DRIVEN_VALIDATION/DATA_INDEX_STORE/data_index.json",
+						"data-schema-plugin": "MayoDataSchema",
+    					"data-indexer-plugin": "StandardDataIndexer"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "SPARK_SQL_TABLE_GEN",
+			"tasks": [
+				{
+					"task_id": "VERSION_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_patient.py",
+					"op_kwargs": {
+						"run": "version_table"
+					}
+				},
+				{
+					"task_id": "DIM_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "dim_info.py",
+					"op_kwargs": {
+						"run": "delta_table",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "delta_table",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "VALIDATE_TABLES",
+			"tasks": [
+				{
+					"task_id": "NEW_TABLES_CHECK",
+					"operator": "SparkOperator",
+					"script_location": "validation",
+					"script_name": "validate_tables.py",
+					"op_kwargs": {
+						"run": "new_tables_check"
+					}
+				},
+				{
+					"task_id": "TOTAL_CHECK",
+					"script_location": "validation",
+					"command": "python3 validate_tables.py",
+					"op_kwargs": {
+						"run": "total_check"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "VALIDATE_TABLES",
+			"tasks": [
+				{
+					"task_id": "NEW_TABLES_CHECK",
+					"operator": "SparkOperator",
+					"script_location": "validation",
+					"script_name": "validate_tables.py",
+					"op_kwargs": {
+						"run": "new_tables_check"
+					}
+				},
+				{
+					"task_id": "TOTAL_CHECK",
+					"script_location": "validation",
+					"command": "python3 validate_tables.py",
+					"op_kwargs": {
+						"run": "total_check"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "INTERIM_DIM_SYN_GENERATOR",
+			"tasks": [
+				{
+					"task_id": "INTERIM_DIM_SYN_GENERATOR",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "interim_syn_dim_generator.py",
+					"op_kwargs": {
+						"run": "ALL",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "AMC_SOURCE_CONCEPT_META_GENERATOR",
+			"tasks": [
+				{
+					"task_id": "AMC_SOURCE_CONCEPT_META_GENERATOR",
+					"operator": "SparkOperator",
+					"script_location": "spark_dim_datagen",
+					"script_name": "source_concept_generator.py",
+					"op_kwargs": {
+						"run": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "INCEPTOR_STATS",
+			"description": "Create all the basic STATS.",
+			"tasks": [
+				{
+					"task_id": "VALIDATION_STATS",
+					"operator": "SparkOperator",
+					"script_location": "miscellaneous",
+					"script_name": "stat_consolidator.py",
+					"op_kwargs": {
+						"run": "generate"
+					}
+				},
+				{
+					"task_id": "VALIDATION_STATS_COMPARE",
+					"operator": "SparkOperator",
+					"script_location": "miscellaneous",
+					"script_name": "stat_consolidator.py",
+					"op_kwargs": {
+						"run": "compare"
+					}
+				},
+				{
+					"task_id": "UNIQUES",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "uniques",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "ENCOUNTER_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "enc_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "COUNTS_DK_INFO",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "enc_count_dk_info",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "Y_ROW_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_stats.py",
+					"op_kwargs": {
+						"run": "y_row_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "RAW_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "raw_col_counts",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "DATAGEN_COUNTS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "data_col_counts",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FACT_LAB_TEST_SPLITTER_5.009",
+			"description": "Generates Filtered O/p for Backfilling Job",
+			"tasks": [
+				{
+					"task_id": "FACT_LAB_TEST_CONVERTOR",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_validator.py",
+					"op_kwargs": {
+						"run": "fact_lab_tests_convertor"
+					}
+				}
+			]
+
+		},
+		{
+			"dag_id": "NPY_WAVEFORM",
+			"description": "Generates NPY waveform data from fact_ecg_waveform",
+			"tasks": [
+				{
+					"task_id": "PARQUET_TO_FINAL_BUCKET",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_splicer.py",
+					"op_kwargs": {
+						"run": "parquet2finalbucket",
+						"source": "FACT_ECG_WAVEFORM"
+					}
+				},
+				{
+					"task_id": "NPY_WAVEFORM",
+					"script_location": "npy_waveform",
+					"command": "python3 npy_waveform.py",
+					"op_kwargs": {
+						"run": "waveform",
+						"max-process": "12"
+					}
+				},
+				{
+					"task_id": "INCREMENTAL_MERGE",
+					"script_location": "npy_waveform",
+					"command": "python3 npy_waveform.py",
+					"op_kwargs": {
+						"run": "merge_meta"
+					}
+				},
+				{
+					"task_id": "WAVEFORM_PATIENT_INFO",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "ecg_patient_info.py"
+				},
+				{
+					"task_id": "ECG_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "ecg.py"
+				},
+				{
+					"task_id": "DELTA_TABLE",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "synthetic_summaries.py",
+					"op_kwargs": {
+						"run": "delta_table",
+						"source": "nfer_ecg_summary"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "SYN_DATAGEN",
+			"description": "Generates synthetic tables like, covid, hospitalization etc",
+			"tasks": [
+				{
+					"task_id": "PROCEDURE_NORMALIZER",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "procedure_normalizer.py"
+				},
+				{
+					"task_id": "DEATH_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "death.py"
+				},
+				{
+					"task_id": "COVID_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "covid.py"
+				},
+				{
+					"task_id": "COVID_COMPREHENSIVE_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "covid_full.py"
+				},
+				{
+					"task_id": "VACCINE_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "vaccine.py"
+				},
+				{
+					"task_id": "HOSPITALIZATION_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "hospitalization.py"
+				},
+				{
+					"task_id": "COMBINED_DRUGS",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "combined_drugs.py"
+				},
+				{
+					"task_id": "MIN_MAX_OBSERVED_DATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "observed_date.py"
+				},
+				{
+					"task_id": "DIM_PATIENT_SUMMARY",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "dim_patient_summary.py"
+				}
+			]
+		},
+		{
+			"dag_id": "MANUAL_HARMONIZATION_DATAGEN",
+			"description": "Generates harmonized variables",
+			"disabled": false,
+			"tasks": [
+				{
+					"task_id": "LABTEST_HYC",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "harmonized_summaries.py",
+					"op_kwargs": {
+						"run": "harmonized_labtests"
+					}
+				},
+				{
+					"task_id": "FLOWSHEET_HYC",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "harmonized_summaries.py",
+					"op_kwargs": {
+						"run": "harmonized_flowsheets"
+					}
+				},
+				{
+					"task_id": "HARMONIZED_COMBINED_VARIABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_syn_datagen",
+					"script_name": "harmonized_summaries.py",
+					"op_kwargs": {
+						"run": "harmonized_combined_summary_spark"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "Catalog",
+			"description": "Catalog datagen pipeline",
+			"disabled": true,
+			"tasks": [
+				{
+					"task_id": "pre_process",
+					"script_location": "catalog_datagen",
+					"command": "python3 pre_process.py"
+				},
+				{
+					"task_id": "pre_hyc_datagen",
+					"script_location": "catalog_datagen",
+					"command": "python3 pre_hyc_datagen.py"
+				},
+				{
+					"task_id": "post_process",
+					"script_location": "catalog_datagen",
+					"command": "python3 post_process.py"
+				},
+				{
+					"task_id": "hyc_datagen",
+					"script_location": "catalog_datagen/hyc_datagen",
+					"command": "python3 main.py",
+					"op_kwargs": {
+						"config_path": "config_cdap.json"
+					}
+				},
+				{
+					"task_id": "final_post_process",
+					"script_location": "catalog_datagen",
+					"command": "bash upd_stw.sh /data/catalog/hyc_data/final"
+				},
+				{
+					"task_id": "disk_datagen",
+					"script_location": "catalog_datagen",
+					"command": "bash disk_datagen.sh /data/catalog/hyc_data/final"
+				}
+			]
+		},
+		{
+			"dag_id": "pull_schema_visualizer_updates",
+			"description": "Pull schema visualizer updates from API for synonyms",
+			"disabled": true,
+			"tasks": [
+				{
+					"task_id": "pull_schema_visualzier_api",
+					"script_location": "miscellaneous",
+					"command": "python3 update_autocomplete_synonyms.py",
+					"op_kwargs": {
+						"schema_viz_out": "/tmp/schema_visualizer.json",
+						"col_meta_info": "/datastorage/full_preview_data/datagen/HYC_DATAGEN/STAGE2/FINAL_DIR/AutoComplete/column_meta_info.json",
+						"hyc_config_file": "/opt/nferx/orchestrator/scripts/pre_hyc_datagen/hyc_cdap_config.json"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "EXTRACTIONS_SETUP",
+			"description": "Setup the virtualenvs, clone repo, and clone resources for the EES jobs",
+			"tasks": [
+				{
+					"task_id": "extractions_setup",
+					"script_location": "spark_ees_datagen",
+					"command": "python3 setup_harmonization_jobs.py",
+					"op_kwargs": {
+						"harmonization_jobs_conf": "../../config/harmonisation_config.json"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "EXTRACTIONS_GENERATOR",
+			"description": "Run All extraction jobs",
+			"tasks": [
+				{
+					"task_id": "EXTRACTIONS_SETUP",
+					"script_location": "spark_ees_datagen",
+					"command": "python3 setup_harmonization_jobs.py",
+					"op_kwargs": {
+						"harmonization_jobs_conf": "../../config/harmonisation_config.json"
+					}
+				},
+				{
+					"task_id": "LABTEST_EXTRACTOR",
+					"ees_id": 3,
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"script_name": "app/datagen/orchestrator/labtest/labtest_extraction_job.py",
+					"additional_paths": [
+						"app",
+						"labtest_explorer",
+						"labtest_explorer/app"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "app/settings/orchestrator/labtest_cdap_data_config.yml"
+					}
+				},
+				{
+					"task_id": "ECHO_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"script_name": "app/datagen/orchestrator/echo/echo_extraction_job.py",
+					"ees_id": 5,
+					"additional_paths": [
+						"app",
+						"labtest_explorer",
+						"labtest_explorer/app"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "app/settings/orchestrator/echo_cdap_data_config.yml"
+					}
+				},
+				{
+					"task_id": "FLOWSHEET_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 4,
+					"script_name": "app/datagen/orchestrator/flowsheet/flowsheet_extraction_job.py",
+					"additional_paths": [
+						"app",
+						"labtest_explorer",
+						"labtest_explorer/app"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "app/settings/orchestrator/flowsheet_cdap_data_config.yml"
+					}
+				},
+				{
+					"task_id": "DIAGNOSIS_EXTRACTOR",
+					"ees_id": 2,
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"script_name": "app/orchestrator/diagnosis_extraction_job.py",
+					"additional_paths": [
+						"app",
+						"icd10_codes",
+						"icd10_codes/app"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "app/settings/orchestrator_data_config.yml"
+					}
+				},
+				{
+					"task_id": "ECG_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 1,
+					"script_name": "app/datagen/orchestrator/ecg/ecg_extraction_job.py",
+					"additional_paths": [
+						"app",
+						"labtest_explorer",
+						"labtest_explorer/app"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "app/datagen/orchestrator/ecg/ecg_config.yml"
+					}
+				},
+				{
+					"task_id": "PROCEDURE_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 6,
+					"script_name": "procedure_extraction_job.py",
+					"additional_paths": [
+						"procedure_harmonization"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "settings/release_data_config.yml"
+					}
+				},
+				{
+					"task_id": "ORDERS_HARMONIZER",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 7,
+					"script_name": "drug_harmonizer/orchestrator/orders_harmonizer.py",
+					"additional_paths": [
+						"medication_data_synthesis/drug_harmonizer"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "drug_harmonizer/settings/cdap_data_config.yml"
+					},
+					"spark_args": {
+						"py-files": "files.tar.gz"
+					}
+				},
+				{
+					"task_id": "MEDS_ADMINISTERED_HARMONIZER",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 8,
+					"script_name": "drug_harmonizer/orchestrator/meds_administered_harmonizer.py",
+					"additional_paths": [
+						"medication_data_synthesis",
+						"medication_data_synthesis/drug_harmonizer"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "drug_harmonizer/settings/cdap_data_config.yml"
+					},
+					"spark_args": {
+						"py-files": "files.tar.gz"
+					}
+				},
+				{
+					"task_id": "MED_INFUSION_HARMONIZER",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 9,
+					"script_name": "drug_harmonizer/orchestrator/med_infusion_harmonizer.py",
+					"additional_paths": [
+						"medication_data_synthesis/drug_harmonizer"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "drug_harmonizer/settings/cdap_data_config.yml"
+					},
+					"spark_args": {
+						"py-files": "files.tar.gz"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "OLD_EXTRACTION_FACT_GEN",
+			"description": "Run All extraction jobs",
+			"tasks": [
+				{
+					"task_id": "MEDS_ADMINISTERED_HARMONIZER",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 8,
+					"script_name": "drug_harmonizer/orchestrator/meds_administered_harmonizer.py",
+					"additional_paths": [
+						"medication_data_synthesis",
+						"medication_data_synthesis/drug_harmonizer"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "drug_harmonizer/settings/cdap_data_config.yml"
+					},
+					"spark_args": {
+						"py-files": "files.tar.gz"
+					}
+				},
+				{
+					"task_id": "PROCEDURE_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 6,
+					"script_name": "procedure_extraction_job.py",
+					"additional_paths": [
+						"procedure_harmonization"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "settings/release_data_config.yml"
+					}
+				},
+				{
+					"task_id": "FACT_DATAGEN",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "MISSING_EXTRACTIONS_GENERATOR",
+			"description": "Run All extraction jobs",
+			"tasks": [
+				{
+						"task_id": "extractions_setup",
+						"script_location": "spark_ees_datagen",
+						"command": "python3 setup_harmonization_jobs.py",
+						"op_kwargs": {
+							"harmonization_jobs_conf": "../../config/harmonisation_config.json"
+						}
+					},
+				{
+						"task_id": "CLINICAL_GENOMICS_EXTRACTOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 11,
+						"script_name": "clinical-genomics-extraction-new/clinical_genomic_extraction.py",
+						"op_kwargs": {
+							"config": "{base_config}",
+							"job_config": "clinical-genomics-extraction-new/config/mayo_panels_config/panels_extraction_config.json",
+							"job_static_config": "clinical-genomics-extraction-new/config/mayo_panels_config/panels_static_info_config.json",
+							"gene_trans_config": "clinical-genomics-extraction-new/config/global_gene_transcript.json",
+							"foundation_config": "clinical-genomics-extraction-new/config/foundation_panels_config/foundation_panels_config.json"
+						},
+						"additional_paths": [
+							"clinical-genomics-extraction-new"
+							],
+						"additional_configs":  [
+								"clinical-genomics-extraction-new/config/mayo_panels_config/panels_extraction_config.json",
+								"clinical-genomics-extraction-new/config/mayo_panels_config/panels_static_info_config.json",
+								"clinical-genomics-extraction-new/config/global_gene_transcript.json",
+								"clinical-genomics-extraction-new/config/foundation_panels_config/foundation_panels_config.json"
+							]
+
+					}
+			]
+		},
+		{
+			"dag_id": "OLD_EXTRACTION_FACT_GEN",
+			"description": "Run All extraction jobs",
+			"tasks": [
+				{
+					"task_id": "MEDS_ADMINISTERED_HARMONIZER",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 8,
+					"script_name": "drug_harmonizer/orchestrator/meds_administered_harmonizer.py",
+					"additional_paths": [
+						"medication_data_synthesis",
+						"medication_data_synthesis/drug_harmonizer"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "drug_harmonizer/settings/cdap_data_config.yml"
+					},
+					"spark_args": {
+						"py-files": "files.tar.gz"
+					}
+				},
+				{
+					"task_id": "PROCEDURE_EXTRACTOR",
+					"operator": "SparkOperator",
+					"is_extraction_job": true,
+					"ees_id": 6,
+					"script_name": "procedure_extraction_job.py",
+					"additional_paths": [
+						"procedure_harmonization"
+					],
+					"op_kwargs": {
+						"orc-config": "{base_config}",
+						"job-config": "settings/release_data_config.yml"
+					}
+				},
+				{
+					"task_id": "FACT_DATAGEN",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "EXTRACTIONS_SYN_DATAGEN",
+			"description": "Add the tables generated by extraction to orchestrator syn table gen method",
+			"tasks": [
+					{
+						"task_id": "extractions_setup",
+						"script_location": "spark_ees_datagen",
+						"command": "python3 setup_harmonization_jobs.py",
+						"op_kwargs": {
+							"harmonization_jobs_conf": "../../config/harmonisation_config.json"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_DIAGNOSIS_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 12,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_diagnosis.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/diagnosis/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_PROCEDURE_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 13,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_procedure.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/procedure/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_LAB_TEST_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 18,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_measurements.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/labtest/mayo/mayo_orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_MODALITY_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 19,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_modality.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/modality_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_ENCOUNTER_TYPE_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 20,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_encounter.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/encounter_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_ORDER_TYPE_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 21,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_order.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/order_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_ORDERS_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 22,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_medication.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/medication/orders_orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_MEDS_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 23,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_medication.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/medication/meds_orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_INFUSION_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 24,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_medication.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/medication/infusion_orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_RACE_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 25,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_demographics.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/race/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_GENDER_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 26,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_demographics.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/gender/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_ETHNICITY_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 27,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_demographics.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/ethnicity/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "CLINICAL_GENOMICS_EXTRACTOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 11,
+						"script_name": "clinical-genomics-extraction-new/clinical_genomic_extraction.py",
+						"op_kwargs": {
+							"config": "{base_config}",
+							"job_config": "clinical-genomics-extraction-new/config/mayo_panels_config/panels_extraction_config.json",
+							"job_static_config": "clinical-genomics-extraction-new/config/mayo_panels_config/panels_static_info_config.json",
+							"gene_trans_config": "clinical-genomics-extraction-new/config/global_gene_transcript.json",
+							"foundation_config": "clinical-genomics-extraction-new/config/foundation_panels_config/foundation_panels_config.json"
+						},
+						"additional_paths": [
+							"clinical-genomics-extraction-new"
+							],
+						"additional_configs":  [
+								"clinical-genomics-extraction-new/config/mayo_panels_config/panels_extraction_config.json",
+								"clinical-genomics-extraction-new/config/mayo_panels_config/panels_static_info_config.json",
+								"clinical-genomics-extraction-new/config/global_gene_transcript.json",
+								"clinical-genomics-extraction-new/config/foundation_panels_config/foundation_panels_config.json"
+							]
+
+					},
+					{
+						"task_id": "DIM_SYN_PATHOLOGY_STAIN_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 28,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_pathology_stain.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/pathology_stain/mayo/orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_PATHOLOGY_ANATOMICAL_STRUCTURE_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 29,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_anatomical_structure.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/anatomical_structure/mayo/orchestrator_config.yml"
+						}
+					},
+                    {
+						"task_id": "DIM_SYN_PATHOLOGY_SPECIMEN_STAIN_LABEL_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 30,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_pathology_stain_label.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/pathology_stain/mayo/orchestrator_stain_label_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_FLOWSHEET_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 31,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_measurements.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/flowsheet/mayo/mayo_orchestrator_data_config.yml"
+						}
+					},
+					{
+						"task_id": "DIM_SYN_TREATMENT_PLAN_GENERATOR",
+						"operator": "SparkOperator",
+						"is_extraction_job": true,
+						"ees_id": 32,
+						"script_name": "concept_harmoniser/orchestrator/dim_syn_treatment_plan.py",
+						"additional_paths": [
+							"concept_harmoniser"
+						],
+						"op_kwargs": {
+							"orc-config": "{base_config}",
+							"job-config": "concept_harmoniser/settings/datagen/treatment_plan/mayo/orchestrator_config.yml"
+						}
+					},
+					{
+						"task_id": "VERSION_EXTRACTED_SYN_TABLES",
+						"operator": "SparkOperator",
+						"script_location": "spark_ees_datagen",
+						"script_name": "harmonized_syn_tables.py",
+						"op_kwargs": {
+							"run": "generate_sparqksql_syn_tables"
+						}
+					}
+			]
+		},
+		{
+			"dag_id": "EXTRACTIONS_MERGER",
+			"description": "Merge the extracted data with fact tables",
+			"tasks": [
+				{
+					"task_id": "MAX_ROW_ID",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "max_row_id",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "EXTRACTION_FACT_MERGER",
+					"operator": "SparkOperator",
+					"script_location": "spark_ees_datagen",
+					"script_name": "extraction_merger.py",
+					"op_kwargs": {
+						"run": "full",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "FACT_VERSION",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "fact_version",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "VALIDATE_FACT_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "fact_version.py",
+					"op_kwargs": {
+						"run": "validate",
+						"source": "ALL"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "EXTRACTIONS_MERGER_TEST",
+			"description": "Merge the extracted data with fact tables",
+			"tasks": [
+				{
+					"task_id": "EXTRACTION_FACT_MERGER",
+					"operator": "SparkOperator",
+					"script_location": "spark_ees_datagen",
+					"script_name": "extraction_merger.py",
+					"op_kwargs": {
+						"run": "full",
+						"source": "ALL",
+						"debug": true
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "TEST_DATAGEN",
+			"description": "Create new run-version",
+			"tasks": [
+				{
+					"task_id": "OLD_DIM_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "dim_maps"
+					}
+				},
+				{
+					"task_id": "OLD_DIM_HASH_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "dim_hash_maps"
+					}
+				},
+				{
+					"task_id": "OLD_FACT_HASH_MAPS",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "fact_hash_maps"
+					}
+				},
+				{
+					"task_id": "DIM_INFO",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "dim_info"
+					}
+				},
+				{
+					"task_id": "DIM_PATIENT",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "dim_patient"
+					}
+				},
+				{
+					"task_id": "FACT_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "fact_tables",
+						"source": "ALL"
+					}
+				},
+				{
+					"task_id": "RUN_STATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_jobs",
+					"script_name": "test_datagen.py",
+					"op_kwargs": {
+						"run": "run_state"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "COHORT_DATAGEN_HYC_260K",
+			"tasks": [
+				{
+					"task_id": "GENERATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_cohort_datagen",
+					"script_name": "fast_cohort_gen.py",
+					"op_kwargs": {
+						"cohort-config": "config/master_260k_config.json",
+						"run": "GENERATE"
+					},
+					"cluster_job": true,
+					"python": ""
+				}
+			]
+		},
+		{
+			"dag_id": "COHORT_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "AVRO_DATAGEN_FULL_V1",
+					"operator": "SparkOperator",
+					"script_location": "spark_cohort_datagen",
+					"script_name": "cohort_dataset_generator.py",
+					"op_kwargs": {
+						"cohort-config": "avro_datagen.json"
+					}
+				}
+			]
+		},
+		{
+			"dag_id": "FAST_COHORT_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "GENERATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_cohort_datagen",
+					"script_name": "fast_cohort_gen.py",
+					"op_kwargs": {
+						"cohort-config": "config/master_config.json",
+						"run": "GENERATE"
+					}
+				},
+				{
+					"task_id": "VALIDATE",
+					"operator": "SparkOperator",
+					"script_location": "spark_cohort_datagen",
+					"script_name": "fast_cohort_gen.py",
+					"op_kwargs": {
+						"cohort-config": "config/master_config.json",
+						"run": "VALIDATE"
+					}
+				},
+				{
+					"task_id": "ADHOC",
+					"operator": "SparkOperator",
+					"script_location": "spark_cohort_datagen",
+					"script_name": "fast_cohort_gen.py",
+					"op_kwargs": {
+						"cohort-config": "config/master_config.json",
+						"run": "ADHOC"
+					}
+				},
+				{
+					"task_id": "COHORT_NPY_DATAGEN",
+					"operator": "TaskGroupOperator"
+				}
+			]
+		},
+		{
+			"dag_id": "XXHASH",
+			"tasks": [
+					{
+						"task_id": "XXHASH",
+						"operator": "SparkOperator",
+						"script_location": "spark_misc",
+						"script_name": "hash_optimisation.py",
+						"op_kwargs": {
+							"source": "ALL",
+							"run": "rewrite_hash"
+						}
+					},
+					{
+						"task_id": "XXHASH_EVEN",
+						"operator": "SparkOperator",
+						"script_location": "spark_misc",
+						"script_name": "hash_optimisation.py",
+						"op_kwargs": {
+							"source": "ALL",
+							"run": "rewrite_even_hash"
+						}
+					},
+					{
+						"task_id": "BRIDGE_XXHASH",
+						"operator": "SparkOperator",
+						"script_location": "spark_dim_datagen",
+						"script_name": "bridge_tables.py",
+						"op_kwargs": {
+							"source": "BRIDGE_TABLES",
+							"run": "generate_bridge_tables"
+						}
+					}
+				]
+		},
+		{
+			"dag_id": "ADD_NEW_EES_COL",
+			"tasks": [
+					{
+						"task_id": "ADD_NEW_EES_COL",
+						"operator": "SparkOperator",
+						"script_location": "spark_ees_datagen",
+						"script_name": "extraction_merger.py",
+
+						"op_kwargs": {
+							"run": "add_new_cols",
+							"source": "FACT_LAB_TEST",
+							"columns": "NFER_WITHIN_BOUNDS,NFER_BOUNDS_TYPE",
+							"skip-if-exists": false
+						}
+					}
+				]
+		},
+		{
+		"dag_id": "COHORT_NPY_DATAGEN",
+			"tasks": [
+
+				{
+					"task_id": "NPY_WAVEFORM",
+					"script_location": "npy_waveform",
+					"command": "python3 npy_waveform.py",
+					"op_kwargs": {
+						"run": "waveform",
+						"max-process": "12",
+						"cohort-config": "../spark_cohort_datagen/config/master_config.json"
+					}
+				}
+				]
+		},
+		{
+		"dag_id": "DICOM_PROCESS",
+			"tasks": [
+					{
+						"task_id": "DICOM_PREPROCESS",
+						"operator": "SparkOperator",
+						"script_location": "dicom_header",
+						"script_name": "dicom_preprocessor.py",
+						"op_kwargs": {
+							"run": "generate_output",
+							"config": "config.json"
+						}
+					},
+					{
+						"task_id": "DICOM_PREPROCESS_VALIDATOR",
+						"operator": "SparkOperator",
+						"script_location": "dicom_header",
+						"script_name": "validators.py",
+						"op_kwargs": {
+							"config": "config.json",
+							"preprocess": true
+
+						}
+					},
+					{
+						"task_id": "DICOM_DATAGEN",
+						"operator": "SparkOperator",
+						"script_location": "dicom_header",
+						"script_name": "dicom_datagen.py",
+						"op_kwargs": {
+							"run": "dicom_datagen",
+							"dicom-config": "config.json"
+						}
+					},
+					{
+						"task_id": "DICOM_SUMMARY_DATAGEN",
+						"operator": "SparkOperator",
+						"script_location": "dicom_header",
+						"script_name": "dicom_datagen.py",
+						"op_kwargs": {
+							"run": "dicom_summary",
+							"dicom-config": "config.json"
+						}
+					}
+
+				]
+		},
+		{
+			"dag_id": "IMAGE_MODALITY_PIPELINE",
+			"description": "Generates required files and updates tables from input dcm images",
+			"tasks": [
+				{
+					"task_id": "IMAGE_DELTA_TABLE_CREATOR",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "image_availability_table_creator.py",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "BUCKETIZE_IMAGES",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "bucketize_images.py",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "VALIDATE_BUCKETIZED_IMAGES",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "validators.py",
+					"op_kwargs": {
+						"bucket_count_check": "",
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "FORMAT_CONVERSIONS",
+					"script_location": "image_modality_datagen",
+					"command": "python3.11 format_conversion.py",
+					"virtual_env_location": "/opt/spark/orchestrator/pyenv3.11",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "UPDATE_DELTA_TABLE_WITH_FORMAT_DATA",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "update_image_availability_table.py",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "VALIDATE_IMAGE_DELTA_TABLE",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "validators.py",
+					"op_kwargs": {
+						"image_delta_table_count_check": "",
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "MERGE_TO_IMAGE_AVAILABILITY_TABLE",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "merge_image_availability_table.py",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "MOVE_IMAGES_TO_FINAL_BUCKET",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "update_final_bucket.py",
+					"op_kwargs": {
+						"image_config": "image_modality_config.json"
+					}
+				},
+				{
+					"task_id": "VALIDATE_FINAL_BUCKET",
+					"operator": "SparkOperator",
+					"script_location": "image_modality_datagen",
+					"script_name": "validators.py",
+					"op_kwargs": {
+						"final_bucket_check": "",
+						"image_config": "image_modality_config.json"
+
+					}
+				}
+			]
+		},
+		{
+			"dag_id":"FACT_DICOM_INVENTORY_PROCESS",
+			"tasks":[
+				{
+					"task_id":"FACT_DICOM_INVENTORY_PREPROCESS",
+					"operator":"SparkOperator",
+					"script_location":"dicom_header",
+					"script_name":"dicom_inventory_processor.py",
+					"op_kwargs":{
+						"run": "generate_output",
+						"config": "config.json"
+					}
+				}
+			]
+		},
+		{
+			"dag_id":"BRIDGE_ANALYSIS",
+			"tasks":[
+				{
+					"task_id":"BRIDGE_CONNECTION_ANALYSIS",
+					"operator":"SparkOperator",
+					"script_location":"miscellaneous",
+					"script_name":"bridge_table_stats.py"
+
+				}
+			]
+		},
+        {
+            "dag_id": "JANSSEN_SECTION_HEADER_MERGE",
+            "tasks": [
+                {
+                    "task_id": "CLINICAL_DOCS_RUN",
+                    "operator": "SparkOperator",
+                    "script_location": "spark_misc",
+                    "script_name": "janssen_sectionheader_merge.py",
+                    "op_kwargs": {}
+                }
+            ]
+        },
+		{
+            "dag_id": "ORCHESTRATOR_ALL_TABLE_STATS",
+            "tasks": [
+                {
+                    "task_id": "GENERATE",
+                    "operator": "SparkOperator",
+                    "script_location": "miscellaneous",
+                    "script_name": "stat_consolidator.py",
+                    "op_kwargs": {
+						"run": "generate_all_table_stat"
+					}
+                },
+				{
+                    "task_id": "COMPARE",
+                    "operator": "SparkOperator",
+                    "script_location": "miscellaneous",
+                    "script_name": "stat_consolidator.py",
+                    "op_kwargs": {
+						"run": "generate_all_table_comparison_stat"
+					}
+                }
+            ]
+        },
+		{
+			"dag_id": "POST_PROCESSOR",
+			"tasks": [
+				{
+					"task_id": "POST_PROCESSOR_DELTA_TABLES",
+					"operator": "SparkOperator",
+					"script_location": "spark_fact_datagen",
+					"script_name": "post_processor.py"
+				},
+				{
+					"task_id": "ADD_SYN_ECG_REPORT_FINDINGS_COL",
+					"operator": "SparkOperator",
+					"script_location": "delta_post_process",
+					"script_name": "fact_ecg_post_process.py"
+				}
+			]
+		},
+
+		{
+            "dag_id": "OMOP_DATAGEN",
+            "tasks": [
+                {
+					"task_id": "OMOP_VOCAB_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "OMOP_MEASUREMENT_VALUE_ADDER",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "OMOP_OUTPUT_DATAGEN",
+					"operator": "TaskGroupOperator"
+				},
+				{
+					"task_id": "OMOP_DATA_VALIDATOR",
+					"operator": "TaskGroupOperator"
+				}
+            ]
+        },
+		{
+			"dag_id": "OMOP_VOCAB_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "SOURCE_TABLE",
+					"operator": "SparkOperator",
+					"script_location": "omop/vocab_processor",
+					"script_name": "amc_vocab_processor.py",
+					"op_kwargs": {
+						"run": "SOURCE_TABLE"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/source_tables.csv"
+					]
+				},
+				{
+					"task_id": "COMBINE_HARMONIZER_OUTPUTS",
+					"operator": "SparkOperator",
+					"script_location": "omop/vocab_processor",
+					"script_name": "harmonized_outputs_combiner.py",
+					"op_kwargs": {
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"/home/ext_greger_g_nference_nfer_works/creds.json"
+					]
+				},
+				{
+					"task_id": "AMC_CONCEPTS_EXTENDER",
+					"operator": "SparkOperator",
+					"script_location": "omop/vocab_processor",
+					"script_name": "amc_vocab_processor.py",
+					"op_kwargs": {
+						"run": "AMC_CONCEPTS_EXTENDER"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json"
+					]
+				},
+				{
+					"task_id": "AMC_CONCEPT_RELATONSHIPS_GENERATOR",
+					"operator": "SparkOperator",
+					"script_location": "omop/vocab_processor",
+					"script_name": "amc_vocab_processor.py",
+					"op_kwargs": {
+						"run": "CONCEPT_RELATONSHIPS_GENERATOR"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json"
+					]
+				},
+				{
+					"task_id": "VOCABULARY_MERGER",
+					"operator": "SparkOperator",
+					"script_location": "omop/vocab_processor",
+					"script_name": "vocabulary_merger.py",
+					"op_kwargs": {
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"/data/creds.json"
+					]
+				}
+			]
+		},
+		{
+			"dag_id": "OMOP_MEASUREMENT_VALUE_ADDER",
+			"tasks": [
+				{
+					"task_id": "OMOP_MEASUREMENT_VALUE_ADDER",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "measurement_harmonization_updater.py",
+					"op_kwargs": {},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json"
+					]
+				}
+			]
+		},
+		{
+			"dag_id": "OMOP_OUTPUT_DATAGEN",
+			"tasks": [
+				{
+					"task_id": "HEALTH_TABLE",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "omop_transformer.py",
+					"op_kwargs": {
+						"run": "HEALTH_SYSTEM_TABLE"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/health_system_tables.json"
+					]
+				},
+				{
+					"task_id": "PERSON",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "omop_transformer.py",
+					"op_kwargs": {
+						"run": "CLINICAL_TABLE",
+						"omop_transform_list": "DIM_PATIENT"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				},
+				{
+					"task_id": "OMOP_CLINICAL_TABLES_SET_1",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "omop_transformer.py",
+					"op_kwargs": {
+						"run": "CLINICAL_TABLE",
+						"omop_transform_list": "FACT_DIAGNOSIS,FACT_PROCEDURES"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				},
+				{
+					"task_id": "OMOP_CLINICAL_TABLES_SET_2",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "omop_transformer.py",
+					"op_kwargs": {
+						"run": "CLINICAL_TABLE",
+						"omop_transform_list": "FACT_MEDS_ADMINISTERED,FACT_MED_INFUSION,FACT_ORDERS,FACT_LAB_TEST"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				},
+				{
+					"task_id": "CONCEPT_ID_FILLER",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "omop_concept_id_filler.py",
+					"op_kwargs": {
+						"run": "FILL_CONCEPT_ID",
+						"omop_transform_list": "ALL"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/concept_mapper.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				},
+				{
+					"task_id": "PUBLISH_SOURCE_CONCEPT_META",
+					"operator": "SparkOperator",
+					"script_location": "omop/omop_generator",
+					"script_name": "publish_source_concept_meta_to_omop_final.py",
+					"op_kwargs": {},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json"
+					]
+				}
+			]
+		},
+		{
+			"dag_id": "OMOP_DATA_VALIDATOR",
+			"tasks": [
+				{
+					"task_id": "DATA_VALIDATOR",
+					"operator": "SparkOperator",
+					"script_location": "omop/validations",
+					"script_name": "omop_validator.py",
+					"op_kwargs": {
+						"run": "data"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				},
+				{
+					"task_id": "ORPHAN_CONCEPT_VALIDATOR",
+					"operator": "SparkOperator",
+					"script_location": "omop/validations",
+					"script_name": "omop_validator.py",
+					"op_kwargs": {
+						"run": "orphan_concepts"
+					},
+					"config_files": [
+						"scripts/omop/config/omop_data_config.json",
+						"scripts/omop/config/omop_schema.json",
+						"scripts/omop/config/transform_mappings.json"
+					]
+				}
+			]
+		}
+	],
+	"dag_args": {
+		"owner": "orchestrator",
+		"email": [
+			"abhijeet.p@nference.net"
+		],
+		"email_on_failure": false,
+		"email_on_retry": false
+	},
+	"pager_duty": {
+		"url": "https://events.pagerduty.com/v2",
+		"routing_key": "4687c7ebf625470dc0fd230fee6f616a"
+	}
+}

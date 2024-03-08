@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+ spark-master:
+   container_name: ez-spark-master
+   image: bitnami/spark:latest
+   entrypoint: ["bin/spark-class", "org.apache.spark.deploy.master.Master"]
+   ports:
+   - "9090:8080"
+   - "7077:7077"
+ spark-worker:
+   image: bitnami/spark:latest
+   entrypoint: ["bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+   depends_on:
+    - spark-master
+   environment:
+     SPARK_MODE: worker
+     SPARK_MASTER_URL: spark://spark-master:7077

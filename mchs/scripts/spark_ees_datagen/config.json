@@ -1,0 +1,13 @@
+{
+  "pre_processed_path": "gs://cdap-orchestrator-offline-releases/PRE_PROCESSED/",
+  "orchestrator_base_bucket": "gs://cdap-orchestrator-offline-releases/ORCHESTRATOR",
+
+  "output_bucket_details": {
+    "comments": "This portion details where the buckets are what are the structure. None of this is used now",
+    "output_base_bucket": "gs://cdap-orchestrator-offline-releases/THIRD_PARTY_RESOURCES/",
+    "output_pre_staging_bucket": "PRE_STAGING",
+    "output_staging_bucket": "STAGING"
+
+  }
+
+}
