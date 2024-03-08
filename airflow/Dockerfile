@@ -21,6 +21,9 @@ RUN apt-get update --fix-missing \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy appropriate entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 USER airflow
 
@@ -35,4 +38,4 @@ ENV AIRFLOW__CORE__LOAD_EXAMPLES=True \
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=${MYSQL_BACKEND} \
     AIRFLOW__CORE__EXECUTOR=LocalExecutor
 
-CMD ["webserver"]
+ENTRYPOINT ["./entrypoint.sh"]

@@ -11,6 +11,7 @@ services:
     volumes:
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
+      - ./data:/data
     ports:
       - '9090:8080'
       - '7077:7077'
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./spark_apps:/opt/spark/apps
       - spark-logs:/opt/spark/spark-events
+      - ./data:/data
 
 volumes:
   spark-logs:
