@@ -1,0 +1,1 @@
+docker build --build-arg MYSQL_USER=root --build-arg MYSQL_PASSWORD=docker_test --build-arg MYSQL_HOST=172.17.0.2 -t airflow_test .

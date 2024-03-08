@@ -1,0 +1,1 @@
+docker run --name airflow_run -d -p 1010:8080 --hostname localhost airflow_test
